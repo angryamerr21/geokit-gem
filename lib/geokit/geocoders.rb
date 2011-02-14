@@ -84,7 +84,7 @@ module Geokit
     @@geocoder_us = false
     @@geocoder_ca = false
     @@geonames = false
-    @@provider_order = [:google,:us]
+    @@provider_order = [:google_v3,:us]
     @@ip_provider_order = [:geo_plugin,:ip]
     @@logger=Logger.new(STDOUT)
     @@logger.level=Logger::INFO
@@ -527,7 +527,7 @@ module Geokit
       end
     end
 
-    class GoogleGeocoder3 < Geocoder
+    class GoogleV3Geocoder < Geocoder
 
       private 
       # Template method which does the reverse-geocode lookup.
@@ -556,15 +556,15 @@ module Geokit
       #
       # ==== EXAMPLES
       # # By default, the geocoder will return Syracuse, NY
-      # Geokit::Geocoders::GoogleGeocoder.geocode('Syracuse').country_code # => 'US'
+      # Geokit::Geocoders::GoogleV3Geocoder.geocode('Syracuse').country_code # => 'US'
       # # With country code biasing, it returns Syracuse in Sicily, Italy
-      # Geokit::Geocoders::GoogleGeocoder.geocode('Syracuse', :bias => :it).country_code # => 'IT'
+      # Geokit::Geocoders::GoogleV3Geocoder.geocode('Syracuse', :bias => :it).country_code # => 'IT'
       #
       # # By default, the geocoder will return Winnetka, IL
-      # Geokit::Geocoders::GoogleGeocoder.geocode('Winnetka').state # => 'IL'
+      # Geokit::Geocoders::GoogleV3Geocoder.geocode('Winnetka').state # => 'IL'
       # # When biased to an bounding box around California, it will now return the Winnetka neighbourhood, CA
       # bounds = Geokit::Bounds.normalize([34.074081, -118.694401], [34.321129, -118.399487])
-      # Geokit::Geocoders::GoogleGeocoder.geocode('Winnetka', :bias => bounds).state # => 'CA'
+      # Geokit::Geocoders::GoogleV3Geocoder.geocode('Winnetka', :bias => bounds).state # => 'CA'
       def self.do_geocode(address, options = {})
         bias_str = options[:bias] ? construct_bias_string_from_options(options[:bias]) : ''
         address_str = address.is_a?(GeoLoc) ? address.to_geocodeable_s : address
@@ -628,7 +628,7 @@ module Geokit
         }
         results['results'].sort_by{|a|accuracy[a['geometry']['location_type']]}.reverse.each do |addr|
           res=GeoLoc.new
-          res.provider = 'google3'
+          res.provider = 'google_v3'
           res.success = true
           res.full_address = addr['formatted_address']
           addr['address_components'].each do |comp|
