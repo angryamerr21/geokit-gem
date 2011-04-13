@@ -234,7 +234,7 @@ module Geokit
         url += add_ampersand(url) + "stno=#{location.street_number}" if location.street_number
         url += add_ampersand(url) + "addresst=#{Geokit::Inflector::url_escape(location.street_address)}" if location.street_address
         url += add_ampersand(url) + "city=#{Geokit::Inflector::url_escape(location.city)}" if location.city
-        url += add_ampersand(url) + "prov=#{location.state}" if location.state
+        url += add_ampersand(url) + "prov=#{location.province}" if location.province
         url += add_ampersand(url) + "postal=#{Geokit::Inflector::url_escape(location.zip)}" if location.zip
         url += add_ampersand(url) + "auth=#{Geokit::Geocoders::geocoder_ca}" if Geokit::Geocoders::geocoder_ca
         url += add_ampersand(url) + "geoit=xml"
@@ -895,7 +895,7 @@ module Geokit
       # The failover approach is crucial for production-grade apps, but is rarely used.
       # 98% of your geocoding calls will be successful with the first call  
       def self.do_geocode(address, options = {})
-        geocode_ip = /^(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$/.match(address)
+        geocode_ip = /^(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$/.match(address) if address.is_a?(String)
         provider_order = geocode_ip ? Geokit::Geocoders::ip_provider_order : Geokit::Geocoders::provider_order
         
         provider_order.each do |provider|
