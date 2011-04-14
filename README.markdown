@@ -16,7 +16,9 @@ Combine this gem with the [geokit-rails plugin](http://github.com/andre/geokit-r
 
 ## INSTALL
 
-    sudo gem install geokit
+    sudo gem install rjaswal-geokit
+    or for latest use
+    ./script/plugin install git://github.com/rjaswal/geokit-gem.git
 
 ## QUICK START
 
