@@ -1,5 +1,3 @@
-#require 'forwardable'
-
 module Geokit     
   # Contains class and instance methods providing distance calcuation services.  This
   # module is meant to be mixed into classes containing lat and lng attributes where
@@ -22,12 +20,12 @@ module Geokit
     KMS_PER_LATITUDE_DEGREE = MILES_PER_LATITUDE_DEGREE * KMS_PER_MILE
     NMS_PER_LATITUDE_DEGREE = MILES_PER_LATITUDE_DEGREE * NMS_PER_MILE
     LATITUDE_DEGREES = EARTH_RADIUS_IN_MILES / MILES_PER_LATITUDE_DEGREE  
-    
+
     # Mix below class methods into the includer.
     def self.included(receiver) # :nodoc:
       receiver.extend ClassMethods
     end   
-    
+
     module ClassMethods #:nodoc:
       # Returns the distance between two points.  The from and to parameters are
       # required to have lat and lng attributes.  Valid options are:
@@ -43,15 +41,15 @@ module Geokit
         when :sphere
           begin
             units_sphere_multiplier(units) * 
-                Math.acos( Math.sin(deg2rad(from.lat)) * Math.sin(deg2rad(to.lat)) + 
-                Math.cos(deg2rad(from.lat)) * Math.cos(deg2rad(to.lat)) * 
-                Math.cos(deg2rad(to.lng) - deg2rad(from.lng)))
+              Math.acos( Math.sin(deg2rad(from.lat)) * Math.sin(deg2rad(to.lat)) + 
+                        Math.cos(deg2rad(from.lat)) * Math.cos(deg2rad(to.lat)) * 
+                        Math.cos(deg2rad(to.lng) - deg2rad(from.lng)))
           rescue Errno::EDOM
             0.0
           end
         when :flat
           Math.sqrt((units_per_latitude_degree(units)*(from.lat-to.lat))**2 + 
-              (units_per_longitude_degree(from.lat, units)*(from.lng-to.lng))**2)
+                    (units_per_longitude_degree(from.lat, units)*(from.lng-to.lng))**2)
         end
       end
 
@@ -69,23 +67,23 @@ module Geokit
         x=Math.cos(from_lat)*Math.sin(to_lat)-Math.sin(from_lat)*Math.cos(to_lat)*Math.cos(d_lng)
         heading=to_heading(Math.atan2(y,x))
       end
-  
+
       # Given a start point, distance, and heading (in degrees), provides
       # an endpoint. Returns a LatLng instance. Typically, the instance method
       # will be used instead of this method.
       def endpoint(start,heading, distance, options={})
         units = options[:units] || Geokit::default_units
         radius = case units
-          when :kms; EARTH_RADIUS_IN_KMS
-          when :nms; EARTH_RADIUS_IN_NMS
-          else EARTH_RADIUS_IN_MILES
-        end
+                 when :kms; EARTH_RADIUS_IN_KMS
+                 when :nms; EARTH_RADIUS_IN_NMS
+                 else EARTH_RADIUS_IN_MILES
+                 end
         start=Geokit::LatLng.normalize(start)        
         lat=deg2rad(start.lat)
         lng=deg2rad(start.lng)
         heading=deg2rad(heading)
         distance=distance.to_f
-        
+
         end_lat=Math.asin(Math.sin(lat)*Math.cos(distance/radius) +
                           Math.cos(lat)*Math.sin(distance/radius)*Math.cos(heading))
 
@@ -103,29 +101,29 @@ module Geokit
         from=Geokit::LatLng.normalize(from)
 
         units = options[:units] || Geokit::default_units
-        
+
         heading=from.heading_to(to)
         distance=from.distance_to(to,options)
         midpoint=from.endpoint(heading,distance/2,options)
       end
-  
+
       # Geocodes a location using the multi geocoder.
       def geocode(location, options = {})
         res = Geocoders::MultiGeocoder.geocode(location, options)
         return res if res.success?
         raise Geokit::Geocoders::GeocodeError      
       end
-    
+
       protected
-    
+
       def deg2rad(degrees)
         degrees.to_f / 180.0 * Math::PI
       end
-      
+
       def rad2deg(rad)
         rad.to_f * 180.0 / Math::PI 
       end
-      
+
       def to_heading(rad)
         (rad2deg(rad)+360)%360
       end
@@ -133,36 +131,36 @@ module Geokit
       # Returns the multiplier used to obtain the correct distance units.
       def units_sphere_multiplier(units)
         case units
-          when :kms; EARTH_RADIUS_IN_KMS
-          when :nms; EARTH_RADIUS_IN_NMS
-          else EARTH_RADIUS_IN_MILES
+        when :kms; EARTH_RADIUS_IN_KMS
+        when :nms; EARTH_RADIUS_IN_NMS
+        else EARTH_RADIUS_IN_MILES
         end
       end
 
       # Returns the number of units per latitude degree.
       def units_per_latitude_degree(units)
         case units
-          when :kms; KMS_PER_LATITUDE_DEGREE
-          when :nms; NMS_PER_LATITUDE_DEGREE
-          else MILES_PER_LATITUDE_DEGREE
+        when :kms; KMS_PER_LATITUDE_DEGREE
+        when :nms; NMS_PER_LATITUDE_DEGREE
+        else MILES_PER_LATITUDE_DEGREE
         end
       end
-    
+
       # Returns the number units per longitude degree.
       def units_per_longitude_degree(lat, units)
         miles_per_longitude_degree = (LATITUDE_DEGREES * Math.cos(lat * PI_DIV_RAD)).abs
         case units
-          when :kms; miles_per_longitude_degree * KMS_PER_MILE
-          when :nms; miles_per_longitude_degree * NMS_PER_MILE
-          else miles_per_longitude_degree
+        when :kms; miles_per_longitude_degree * KMS_PER_MILE
+        when :nms; miles_per_longitude_degree * NMS_PER_MILE
+        else miles_per_longitude_degree
         end
       end  
     end
-  
+
     # -----------------------------------------------------------------------------------------------
     # Instance methods below here
     # -----------------------------------------------------------------------------------------------
-  
+
     # Extracts a LatLng instance. Use with models that are acts_as_mappable
     def to_lat_lng
       return self if instance_of?(Geokit::LatLng) || instance_of?(Geokit::GeoLoc)
@@ -190,7 +188,7 @@ module Geokit
     def heading_from(other)
       self.class.heading_between(other,self)
     end
- 
+
     # Returns the endpoint, given a heading (in degrees) and distance.  
     # Valid option:
     # :units - valid values are :miles, :kms, or :nms (:miles is the default)
@@ -204,7 +202,7 @@ module Geokit
     def midpoint_to(other, options={})
       self.class.midpoint_between(self,other,options)
     end
-    
+
   end
 
   class LatLng 
@@ -235,12 +233,12 @@ module Geokit
     def ll
       "#{lat},#{lng}"
     end
-    
+
     #returns a string with comma-separated lat,lng values
     def to_s
       ll
     end
-  
+
     #returns a two-element array
     def to_a
       [lat,lng]
@@ -250,15 +248,15 @@ module Geokit
     def ==(other)
       other.is_a?(LatLng) ? self.lat == other.lat && self.lng == other.lng : false
     end
-    
+
     def hash
       lat.hash + lng.hash
     end
-    
+
     def eql?(other)
       self == other
     end
-    
+
     # A *class* method to take anything which can be inferred as a point and generate
     # a LatLng from it. You should use this anything you're not sure what the input is,
     # and want to deal with it as a LatLng if at all possible. Can take:
@@ -271,7 +269,7 @@ module Geokit
     def self.normalize(thing,other=nil)
       # if an 'other' thing is supplied, normalize the input by creating an array of two elements
       thing=[thing,other] if other
-      
+
       if thing.is_a?(String)
         thing.strip!
         if match=thing.match(/(\-?\d+\.?\d*)[, ] ?(\-?\d+\.?\d*)$/)
@@ -288,10 +286,10 @@ module Geokit
       elsif thing.class.respond_to?(:acts_as_mappable) && thing.class.respond_to?(:distance_column_name)
         return thing.to_lat_lng
       end
-      
+
       raise ArgumentError.new("#{thing} (#{thing.class}) cannot be normalized to a LatLng. We tried interpreting it as an array, string, Mappable, etc., but no dice.")
     end
-    
+
     # Reverse geocodes a LatLng object using the MultiGeocoder (default), or optionally
     # using a geocoder of your choosing. Returns a new Geokit::GeoLoc object
     # 
@@ -313,7 +311,7 @@ module Geokit
       else
         raise ArgumentError.new("#{options[:using]} is not a valid geocoder.")
       end
-      
+
       provider.send(:reverse_geocode, self)
     end
   end
@@ -355,7 +353,7 @@ module Geokit
     # Constructor expects a hash of symbols to correspond with attributes.
     def initialize(h={})
       @all = [self]
-      
+
       @street_address=h[:street_address] 
       @street_number=nil
       @street_name=nil
@@ -374,7 +372,7 @@ module Geokit
     def is_us?
       country_code == 'US'
     end
-    
+
     def success?
       success == true
     end
@@ -419,7 +417,7 @@ module Geokit
         @street_address = address
       end
     end  
-    
+
     # Returns a comma-delimited string consisting of the street address, city, state,
     # zip, and country code.  Only includes those attributes that are non-blank.
     def to_geocodeable_s
@@ -427,7 +425,7 @@ module Geokit
       a.delete_if { |e| !e || e == '' }
       a.join(', ')      
     end
-    
+
     def to_yaml_properties
       (instance_variables - ['@all']).sort
     end
@@ -437,33 +435,33 @@ module Geokit
       "Provider: #{provider}\nStreet: #{street_address}\nCity: #{city}\nState: #{state}\nZip: #{zip}\nLatitude: #{lat}\nLongitude: #{lng}\nCountry: #{country_code}\nSuccess: #{success}"
     end
   end
-  
+
   # Bounds represents a rectangular bounds, defined by the SW and NE corners
   class Bounds
     # sw and ne are LatLng objects
     attr_accessor :sw, :ne
-    
+
     # provide sw and ne to instantiate a new Bounds instance
     def initialize(sw,ne)
       raise ArgumentError if !(sw.is_a?(Geokit::LatLng) && ne.is_a?(Geokit::LatLng))
       @sw,@ne=sw,ne
     end
-    
+
     #returns the a single point which is the center of the rectangular bounds
     def center
       @sw.midpoint_to(@ne)
     end
-  
+
     # a simple string representation:sw,ne
     def to_s
       "#{@sw.to_s},#{@ne.to_s}"   
     end
-    
+
     # a two-element array of two-element arrays: sw,ne
     def to_a
       [@sw.to_a, @ne.to_a]
     end
-    
+
     # Returns true if the bounds contain the passed point.
     # allows for bounds which cross the meridian
     def contains?(point)
@@ -476,7 +474,7 @@ module Geokit
       end
       res
     end
-    
+
     # returns true if the bounds crosses the international dateline
     def crosses_meridian?
       @sw.lng > @ne.lng 
@@ -487,7 +485,7 @@ module Geokit
     def ==(other)
       other.is_a?(Bounds) ? self.sw == other.sw && self.ne == other.ne : false
     end
-    
+
     # Equivalent to Google Maps API's .toSpan() method on GLatLng's.
     #
     # Returns a LatLng object, whose coordinates represent the size of a rectangle
@@ -497,9 +495,9 @@ module Geokit
       lng_span = (crosses_meridian? ? 360 + @ne.lng - @sw.lng : @ne.lng - @sw.lng).abs
       Geokit::LatLng.new(lat_span, lng_span)
     end
-    
+
     class <<self
-      
+
       # returns an instance of bounds which completely encompases the given circle
       def from_point_and_radius(point,radius,options={})
         point=LatLng.normalize(point)
@@ -511,7 +509,7 @@ module Geokit
         ne=Geokit::LatLng.new(p0.lat,p90.lng)
         Geokit::Bounds.new(sw,ne)
       end
-      
+
       # Takes two main combinations of arguments to create a bounds:
       # point,point   (this is the only one which takes two arguments
       # [point,point]
@@ -521,7 +519,7 @@ module Geokit
       def normalize (thing,other=nil)   
         # maybe this will be simple -- an actual bounds object is passed, and we can all go home
         return thing if thing.is_a? Bounds
-        
+
         # no? OK, if there's no "other," the thing better be a two-element array        
         thing,other=thing if !other && thing.is_a?(Array) && thing.size==2
 
