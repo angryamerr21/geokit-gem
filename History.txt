@@ -1,3 +1,12 @@
+=== 1.5.1 2011-04-14
+* Merged in Google v3 api (googlev3) (scsmith repo)
+* Merged in Yahoo path finder api, replace existing one (yahoo) (cdb repo)
+* Merged in Bing (bing) (tigrish repo)
+* Bug fixes in MultiGecoder class
+* Bug fixes in CaGecoder class
+	- Use province instead of state in passed in GeoLoc object
+
+
 === 1.5.0 / 2009-09-21
 * fixed jruby compatibility (thanks manalang)
 * added country name to Google reverse geocoder (thanks joahking)
